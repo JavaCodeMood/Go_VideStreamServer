@@ -3,6 +3,9 @@ package dbops
 import(
 	//"log"
 	"testing"
+	"strconv"
+	"time"
+	"fmt"
 )
 
 //init(dblogin, truncate tables)
@@ -19,7 +22,7 @@ func clearTables(){
 func TestMain(m *testing.M){
 	clearTables()
 	m.Run()
-	//clearTables();
+	clearTables();
 }
 
 // 测试用户例
@@ -94,3 +97,38 @@ func testDeleteVideoInfo(t *testing.T){
 		t.Errorf("Error of DeleteVideoInfo : %v", err)
 	}
 }
+
+
+// 测试评论增删改查
+
+func TestCommentWorkFlow(t *testing.T){
+	clearTables()
+	t.Run("PrepareUser",testAddUser)
+	t.Run("AddComment",testAddComment)
+	t.Run("ListComment",testListComment)
+	clearTables()
+}
+
+func testAddComment(t *testing.T){
+	vid := "12345"
+	aid :=1
+	content := " i like it"
+	err := AddNewComment(vid , aid, content)
+	if err != nil{
+		t.Errorf("Error of AddComment: %v",err)
+	}
+}
+
+func testListComment(t *testing.T){
+	vid := "12345"
+	from := 1514764800
+	to , _ := strconv.Atoi(strconv.FormatInt(time.Now().UnixNano()/1000000000,10))
+	res , err := ListComments(vid,from,to)
+	if err != nil{
+		t.Errorf("Error of ListComment: %v",err)
+	}
+	for i , ele := range res{
+		fmt.Printf("Comment: %d , %v, \n",i ,ele)
+	}
+}
+
