@@ -9,13 +9,13 @@ import(
 )
 
 func InertSession(sid string, ttl int64 , uname string) error{
-	ttlstr := strconv.formatInt(ttl,10)
+	ttlstr := strconv.FormatInt(ttl,10)
 	stmtIns , err := dbConn.Prepare("INSERT INTO sessions (session_id , TTL, login_name) VALUES(?,?,?)")
 	if err != nil{
 		return err 
 	}
 
-	_, err = stmtIns.Exec(sid,ttlstr,login_name)
+	_, err = stmtIns.Exec(sid,ttlstr,uname)
 
 	if err != nil{
 		return err
@@ -37,7 +37,7 @@ func RetrieveSession(sid string)(*defs.SimpleSession , error){
 	var uname string 
 	err = stmtOut.QueryRow(sid).Scan(&ttl,&uname);
 	if err != nil && err != sql.ErrNoRows {
-		return "",err
+		return nil,err
 	}
 
 	if res ,  err := strconv.ParseInt(ttl,10,64); err == nil{
@@ -52,9 +52,9 @@ func RetrieveSession(sid string)(*defs.SimpleSession , error){
 }
 
 
-func RetrieveAllSessions()(&sync.Map , error){
+func RetrieveAllSessions()(*sync.Map , error){
 	m := &sync.Map{}
-	stmtOut , err := dbConn("SELECT * FROM sessions")
+	stmtOut , err := dbConn.Prepare("SELECT * FROM sessions")
 	if err != nil{
 		log.Printf("%s", err)
 		return nil , err
@@ -70,7 +70,7 @@ func RetrieveAllSessions()(&sync.Map , error){
 		var id string 
 		var ttlstr string 
 		var login_name string 
-		if er := rows.San(&id,&ttlstr, &login_name); er != nil{
+		if er := rows.Scan(&id,&ttlstr, &login_name); er != nil{
 			log.Printf("retrive sessions error: %s ", er);
 			break
 		}
@@ -93,7 +93,7 @@ func DeleteSession(sid string) error{
 		return err
 	}
 
-	if _, err != stmtOut.Query(sid); err != nil{
+	if _, err := stmtOut.Query(sid); err != nil{
 		return err 
 	}
 

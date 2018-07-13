@@ -11,7 +11,7 @@ import(
 var sessionMap *sync.Map
 
 func NowInMilli() int64{
-	return time.Now().Unixnano()/100000
+	return time.Now().UnixNano()/100000
 }
 func init(){
 	sessionMap = &sync.Map{}
@@ -23,11 +23,11 @@ func LoadSessionsFromDB(){
 		return 
 	}
 
-	r.Range(func(k,v interface{} bool{
+	r.Range(func(k,v interface{}) bool{
 		ss := v.(*defs.SimpleSession)
 		sessionMap.Store(k,ss)
 		return true 
-		}))
+		})
 }
 
 func deleteExpiredSession(sid string){
@@ -39,7 +39,7 @@ func GenerateNewSessionId(un string)(string){
 	id , _ := utils.NewUUID()
 	ct := NowInMilli()
 	ttl := ct + 30*60*1000 
-	ss := &defs.SimpleSession(Username: un, TTL: ttl)
+	ss := &defs.SimpleSession{Username: un, TTL: ttl}
 	sessionMap.Store(id,ss)
 	dbops.InertSession(id,ttl,un)
 	return id
